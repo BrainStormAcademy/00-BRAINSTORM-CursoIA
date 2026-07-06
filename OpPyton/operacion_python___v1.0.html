@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operación Python — Red Phantom</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--bg2:#f7f7f5;--bg3:#f1efe8;
+  --tx:#1a1a18;--tx2:#5f5e5a;--tx3:#888780;
+  --bd:rgba(0,0,0,0.12);--bd2:rgba(0,0,0,0.22);
+  --rm:8px;--rl:12px;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --mono:'SF Mono','Fira Code','Cascadia Code',monospace;
+  --p50:#EEEDFE;--p200:#AFA9EC;--p600:#534AB7;--p800:#3C3489;--p900:#26215C;
+  --t50:#E1F5EE;--t200:#5DCAA5;--t600:#0F6E56;--t800:#085041;--t900:#04342C;
+  --a50:#FAEEDA;--a200:#FAC775;--a600:#BA7517;--a800:#633806;
+  --r50:#FCEBEB;--r200:#F09595;--r600:#A32D2D;--r800:#501313;
+  --g50:#F1EFE8;--g800:#444441;--g900:#2C2C2A;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1a1a18;--bg2:#222220;--bg3:#2c2c2a;
+    --tx:#f1efe8;--tx2:#b4b2a9;--tx3:#888780;
+    --bd:rgba(255,255,255,0.12);--bd2:rgba(255,255,255,0.22);
+    --p50:#26215C;--p200:#AFA9EC;--p800:#CECBF6;--p900:#EEEDFE;
+    --t50:#04342C;--t200:#5DCAA5;--t800:#9FE1CB;--t900:#E1F5EE;
+    --a50:#412402;--a200:#EF9F27;--a800:#FAC775;
+    --r50:#501313;--r200:#F09595;--r800:#F7C1C1;
+    --g50:#2C2C2A;--g800:#D3D1C7;--g900:#F1EFE8;
+  }
+}
+body{font-family:var(--sans);background:var(--bg3);color:var(--tx);min-height:100vh;padding:2rem 1rem}
+.wrap{max-width:740px;margin:0 auto}
+.lbl{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);margin-bottom:.4rem}
+h1{font-size:26px;font-weight:500;margin-bottom:.5rem}
+.sub{font-size:15px;color:var(--tx2);line-height:1.6;margin-bottom:1.5rem}
+
+.file-card{background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--rl);overflow:hidden;margin-bottom:1.75rem}
+.file-bar{background:var(--bg2);padding:10px 14px;border-bottom:0.5px solid var(--bd);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.file-bar-name{font-size:12px;font-weight:500;font-family:var(--mono);color:var(--tx2)}
+.file-status{margin-left:auto;font-size:11px;font-weight:500;padding:2px 8px;border-radius:99px}
+.status-enc{background:var(--r50);color:var(--r600)}
+.status-dec{background:var(--t50);color:var(--t600)}
+@media(prefers-color-scheme:dark){
+  .status-enc{color:var(--r200)}
+  .status-dec{color:var(--t200)}
+}
+.file-content{padding:1rem;font-family:var(--mono);font-size:12px;line-height:1.8;color:var(--tx2);white-space:pre;overflow-x:auto;max-height:190px;overflow-y:auto}
+.fc-enc{color:var(--r600)}
+@media(prefers-color-scheme:dark){.fc-enc{color:var(--r200)}}
+.fc-header{color:var(--tx3)}
+.fc-corrupt{color:var(--a600)}
+@media(prefers-color-scheme:dark){.fc-corrupt{color:var(--a200)}}
+.fc-valid{color:var(--t600)}
+@media(prefers-color-scheme:dark){.fc-valid{color:var(--t200)}}
+.file-toggle{display:flex;border-top:0.5px solid var(--bd)}
+.ftab{flex:1;padding:8px;font-size:12px;font-weight:500;font-family:var(--sans);cursor:pointer;border:none;background:var(--bg2);color:var(--tx3);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.ftab:first-child{border-right:0.5px solid var(--bd)}
+.ftab.active{background:var(--bg);color:var(--tx)}
+.ftab i{font-size:13px}
+
+.prog-wrap{margin-bottom:.5rem;background:var(--bg2);border-radius:99px;height:6px;border:0.5px solid var(--bd)}
+.prog-fill{height:100%;border-radius:99px;background:var(--p800);transition:width .4s ease}
+.prog-lbl{font-size:12px;color:var(--tx3);margin-top:6px;margin-bottom:1.25rem}
+
+.mnav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem}
+.dot{width:34px;height:34px;border-radius:50%;border:0.5px solid var(--bd);background:var(--bg);cursor:pointer;font-size:12px;font-weight:500;color:var(--tx2);display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:var(--sans)}
+.dot:hover{border-color:var(--p600);color:var(--p600)}
+.dot.active{background:var(--p800);color:#fff;border-color:var(--p800)}
+.dot.done{background:var(--t800);color:#fff;border-color:var(--t800)}
+.dot.phase{border-radius:var(--rm);width:auto;padding:0 10px;font-size:11px}
+
+.mcard{background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--rl);overflow:hidden}
+.mcard-head{padding:1.25rem;border-bottom:0.5px solid var(--bd);display:flex;gap:12px;align-items:flex-start}
+.mbadge{border-radius:var(--rm);font-size:11px;font-weight:500;padding:3px 8px;white-space:nowrap;flex-shrink:0;margin-top:2px}
+.badge-decrypt{background:var(--r50);color:var(--r600)}
+.badge-parse{background:var(--p50);color:var(--p900)}
+@media(prefers-color-scheme:dark){
+  .badge-decrypt{color:var(--r200)}
+  .badge-parse{color:var(--p900)}
+}
+.mtitle{font-size:17px;font-weight:500;margin-bottom:6px}
+.ctag{display:inline-block;background:var(--t50);color:var(--t800);border-radius:var(--rm);font-size:11px;font-weight:500;padding:2px 8px;margin:2px 2px 0 0}
+@media(prefers-color-scheme:dark){.ctag{color:var(--t900)}}
+
+.mbody{padding:1.25rem}
+.sec{margin-bottom:1.5rem}
+.sec-t{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);margin-bottom:.75rem;display:flex;align-items:center;gap:6px}
+.sec-t i{font-size:14px}
+
+.brief{background:var(--g50);border-left:3px solid var(--p800);border-radius:0 var(--rm) var(--rm) 0;padding:1rem;font-size:14px;line-height:1.7;color:var(--g900)}
+@media(prefers-color-scheme:dark){.brief{color:var(--g800)}}
+
+.input-highlight{background:var(--a50);border:0.5px solid var(--a600);border-radius:var(--rm);padding:.75rem 1rem;font-size:13px;line-height:1.65;color:var(--a800);margin-bottom:1rem;display:flex;align-items:flex-start;gap:8px}
+@media(prefers-color-scheme:dark){.input-highlight{color:var(--a200)}}
+.input-highlight i{flex-shrink:0;margin-top:2px;font-size:16px}
+
+/* crypto explainer box */
+.crypto-box{background:var(--p50);border:0.5px solid var(--p200);border-radius:var(--rm);padding:1rem 1.25rem;margin-bottom:1rem}
+@media(prefers-color-scheme:dark){.crypto-box{background:var(--p50);border-color:var(--p200)}}
+.crypto-title{font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--p600);margin-bottom:.75rem;display:flex;align-items:center;gap:6px}
+@media(prefers-color-scheme:dark){.crypto-title{color:var(--p200)}}
+.crypto-row{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin-bottom:8px;font-family:var(--mono);font-size:13px}
+.crypto-arrow{color:var(--tx3);font-size:16px;text-align:center}
+.crypto-from{background:var(--r50);border-radius:4px;padding:3px 8px;color:var(--r600);text-align:center}
+.crypto-to{background:var(--t50);border-radius:4px;padding:3px 8px;color:var(--t600);text-align:center}
+@media(prefers-color-scheme:dark){
+  .crypto-from{color:var(--r200)}
+  .crypto-to{color:var(--t200)}
+}
+.crypto-note{font-size:12px;color:var(--tx3);margin-top:.5rem;line-height:1.6}
+
+.pbox{background:var(--bg2);border:0.5px solid var(--bd);border-radius:var(--rm);padding:.875rem 1rem;font-size:14px;line-height:1.7;color:var(--tx);position:relative;padding-right:84px;white-space:pre-wrap;word-break:break-word}
+.cpbtn{position:absolute;top:8px;right:8px;background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--rm);padding:5px 10px;font-size:12px;cursor:pointer;color:var(--tx2);display:flex;align-items:center;gap:4px;font-family:var(--sans);transition:all .15s}
+.cpbtn:hover{border-color:var(--p600);color:var(--p600)}
+.cpbtn.ok{background:var(--t50);color:var(--t800);border-color:var(--t200)}
+
+.output-box{background:var(--bg3);border:0.5px solid var(--bd);border-radius:var(--rm);padding:.875rem 1rem;font-family:var(--mono);font-size:12.5px;line-height:1.8;color:var(--tx2);white-space:pre-wrap;word-break:break-word}
+.out-ok{color:var(--t600)}
+.out-warn{color:var(--a600)}
+@media(prefers-color-scheme:dark){
+  .out-ok{color:var(--t200)}
+  .out-warn{color:var(--a200)}
+}
+
+.lgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px}
+.lpill{background:var(--bg2);border:0.5px solid var(--bd);border-radius:var(--rm);padding:10px 12px}
+.plbl2{font-size:11px;color:var(--tx3);margin-bottom:4px;font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+.pval{font-size:13px;font-weight:500;font-family:var(--mono);color:var(--tx)}
+
+.insight{background:var(--bg2);border:0.5px solid var(--bd);border-radius:var(--rm);padding:1rem;font-size:13.5px;line-height:1.7;color:var(--tx2)}
+.insight strong{color:var(--tx);font-weight:500}
+.insight code{font-family:var(--mono);font-size:12.5px;background:var(--bg);border:0.5px solid var(--bd);border-radius:4px;padding:1px 5px;color:var(--tx)}
+
+.mfoot{padding:1rem 1.25rem;border-top:0.5px solid var(--bd);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:0.5px solid var(--bd);background:var(--bg);border-radius:var(--rm);padding:8px 16px;font-size:13px;cursor:pointer;color:var(--tx);display:flex;align-items:center;gap:6px;font-family:var(--sans);transition:all .15s}
+.btn:hover{border-color:var(--bd2);background:var(--bg2)}
+.btn-p{background:var(--p800);color:#fff;border-color:var(--p800)}
+.btn-p:hover{background:var(--p900);border-color:var(--p900)}
+.btn-d{background:var(--t800);color:#fff;border-color:var(--t800)}
+.btn-d:hover{background:var(--t900);border-color:var(--t900)}
+
+.phase-divider{display:flex;align-items:center;gap:10px;margin:1.5rem 0 1.25rem;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3)}
+.phase-divider::before,.phase-divider::after{content:'';flex:1;height:0.5px;background:var(--bd)}
+
+.ogrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1.5rem}
+.ocard{background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--rm);padding:12px;cursor:pointer;transition:border-color .15s}
+.ocard:hover{border-color:var(--p600)}
+.ocard.dov{border-left:3px solid var(--t800)}
+.ocard.phase0{border-left:3px solid var(--r600)}
+@media(prefers-color-scheme:dark){.ocard.phase0{border-left-color:var(--r200)}}
+.onum{font-size:11px;color:var(--tx3);font-weight:500;margin-bottom:4px}
+.otit{font-size:13px;font-weight:500;margin-bottom:4px}
+.ocon{font-size:11px;color:var(--tx2)}
+
+@media(max-width:480px){
+  .ogrid{grid-template-columns:1fr}
+  .mfoot{flex-direction:column}
+  .crypto-row{font-size:11px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div style="margin-bottom:2rem">
+  <p class="lbl">Ejercicio didáctico — devs seniors</p>
+  <h1>Operación Python: Red Phantom 🐍</h1>
+  <p class="sub">Interceptamos un archivo con datos de agentes enemigos — pero está encriptado con ROT-13 y además parcialmente corrupto. Tu misión: escribir Python (con ayuda de la IA) para desencriptarlo, limpiarlo, parsearlo y generar el reporte de inteligencia final. <strong>9 misiones. Un solo archivo.</strong></p>
+</div>
+
+<div class="file-card">
+  <div class="file-bar">
+    <i class="ti ti-file-text" aria-hidden="true" style="font-size:15px;color:var(--tx3)"></i>
+    <span class="file-bar-name">agentes_enemigos.txt</span>
+    <span class="file-status" id="fstatus">🔒 ENCRIPTADO ROT-13</span>
+  </div>
+  <div class="file-content" id="file-preview"></div>
+  <div class="file-toggle">
+    <button class="ftab active" id="tab-enc" onclick="showTab('enc')"><i class="ti ti-lock" aria-hidden="true"></i> Encriptado (estado inicial)</button>
+    <button class="ftab" id="tab-dec" onclick="showTab('dec')"><i class="ti ti-lock-open" aria-hidden="true"></i> Desencriptado (misión 0)</button>
+  </div>
+</div>
+
+<div class="prog-wrap"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+<p class="prog-lbl" id="prog-lbl">0 de 9 misiones completadas</p>
+
+<div class="mnav" id="mnav"></div>
+<div id="mview"></div>
+
+</div>
+<script>
+const FILE_ENC = `## NEPUVIB VAGREPRCGNQB - FRPGBE 7 - PYNFVSVPNQB ##
+## BEVTRA: ERQ CUNAGBZ - GENAFZVFVBA 2024-11-03 ##
+## RFGNQB: CNEPVNYZRAGR PBEEHCGB ##
+
+-- ERTVFGEB QR PNZCB --
+ABZOER|NYVNF|CNVF|AVIRY|NPGVIB
+Ivxgbe Fbebxva | FBZOEN | EH | A-9 | FV
+Ryran Infdhrm  |  IVCRE |ZK | A-7 | FV
+[PBEEHCGB]
+Unaf Zhryyre|YBOB|QR|A-8|FV
+---YVARN QNAÑNQN---
+Lhxv Gnanxn | XVGFHAR | WC | A-6 | AB
+???|FCRPGER|??|A-10|FV
+Znevn Bxbaxjb|SNAGNFZN|AT|A-8|FV
+[PBEEHCGB]
+Nyrxfrv Crgebi|UVREEB|EH|A-5|AB
+---YVARN QNAÑNQN---
+Fbsvn Erlrf|RPYVCFR|NE|A-9|FV
+[PBEEHCGB]
+Wva Jrv|QENTBA|PA|A-7|FV
+Sngvzn Ny-Unffna|ZVENTR|RT|A-6|AB
+[PBEEHCGB]
+---YVARN QNAÑNQN---
+Oehab Sreerggv|GBEZRAGN|VG|A-8|FV
+???|CUNAGBZ|??|A-10|FV`;
+
+const FILE_DEC = `## ARCHIVO INTERCEPTADO - SECTOR 7 - CLASIFICADO ##
+## ORIGEN: RED PHANTOM - TRANSMISION 2024-11-03 ##
+## ESTADO: PARCIALMENTE CORRUPTO ##
+
+-- REGISTRO DE CAMPO --
+NOMBRE|ALIAS|PAIS|NIVEL|ACTIVO
+Viktor Sorokin | SOMBRA | RU | N-9 | SI
+Elena Vasquez  |  VIPER |MX | N-7 | SI
+[CORRUPTO]
+Hans Mueller|LOBO|DE|N-8|SI
+---LINEA DAÑADA---
+Yuki Tanaka | KITSUNE | JP | N-6 | NO
+???|SPECTRE|??|N-10|SI
+Maria Okonkwo|FANTASMA|NG|N-8|SI
+[CORRUPTO]
+Aleksei Petrov|HIERRO|RU|N-5|NO
+---LINEA DAÑADA---
+Sofia Reyes|ECLIPSE|AR|N-9|SI
+[CORRUPTO]
+Jin Wei|DRAGON|CN|N-7|SI
+Fatima Al-Hassan|MIRAGE|EG|N-6|NO
+[CORRUPTO]
+---LINEA DAÑADA---
+Bruno Ferretti|TORMENTA|IT|N-8|SI
+???|PHANTOM|??|N-10|SI`;
+
+const missions = [
+  {
+    id: 0,
+    phase: "decrypt",
+    title: "Descifrar el mensaje encriptado",
+    brief: "El archivo que interceptamos está encriptado con ROT-13 — un cifrado de sustitución donde cada letra del alfabeto se desplaza 13 posiciones. Tenés que construir el desencriptador desde cero, entendiendo cómo Python trabaja con caracteres a nivel numérico.",
+    concepts: ["ord()", "chr()", "operador %", "for sobre string", "string acumulación"],
+    inputNote: "Archivo: agentes_enemigos.txt — contenido completamente encriptado con ROT-13",
+    cryptoExplainer: true,
+    prompt: `Soy dev senior (JS/Java) pero nunca usé Python. Intercepté un archivo encriptado con ROT-13: cada letra del alfabeto se desplaza 13 posiciones (A→N, B→O, ..., N→A). Los números, símbolos y espacios no cambian.
+
+Necesito que me expliques y construyas en Python una función rot13(texto) que:
+1) Recorra cada carácter del string con un for loop
+2) Si es letra minúscula: use ord() para obtener el número ASCII, aplique el desplazamiento de 13 con el operador módulo %, y use chr() para volver a carácter
+3) Haga lo mismo para mayúsculas
+4) Deje cualquier otro carácter sin cambiar
+5) Retorne el string desencriptado
+
+Luego úsala para leer el archivo agentes_enemigos.txt y guardá el resultado desencriptado en agentes_descifrado.txt.
+
+Explicame qué son ord() y chr() en Python y por qué el módulo % 26 es la clave del desplazamiento circular. Comparame este enfoque con cómo harías algo similar en JavaScript.`,
+    expectedOutput: `=== DESENCRIPTANDO agentes_enemigos.txt ===
+
+Verificando propiedad ROT-13:
+  rot13("PHANTOM") = "CUNAGBZ"
+  rot13("CUNAGBZ") = "PHANTOM"  ← aplicar dos veces = original
+
+Desencriptando archivo...
+  Caracteres procesados: 687
+  Letras rotadas      : 412
+  Sin modificar       : 275 (números, símbolos, espacios)
+
+Archivo guardado como: agentes_descifrado.txt
+
+Primeras líneas desencriptadas:
+  ## ARCHIVO INTERCEPTADO - SECTOR 7 - CLASIFICADO ##
+  ## ORIGEN: RED PHANTOM - TRANSMISION 2024-11-03 ##`,
+    outputClass: "out-ok",
+    learning: [
+      { label: "Código ASCII", val: "ord('A') → 65" },
+      { label: "De número a char", val: "chr(65) → 'A'" },
+      { label: "Módulo circular", val: "(n + 13) % 26" },
+      { label: "Rango de letra", val: "'a' <= c <= 'z'" }
+    ],
+    insight: "<strong>ord() y chr()</strong> convierten entre caracteres y sus códigos numéricos ASCII — no existen como funciones built-in en JS (ahí usás <code>charCodeAt()</code> y <code>fromCharCode()</code>). La magia del módulo <code>% 26</code>: si estás en la posición 20 y sumás 13, llegás a 33 — que sale del alfabeto. <code>% 26</code> lo hace circular, volviendo al inicio. Y la propiedad más elegante de ROT-13: es su propio inverso. Aplicarlo dos veces siempre devuelve el original, porque 13 + 13 = 26 = 0 (mod 26)."
+  },
+  {
+    id: 1,
+    phase: "parse",
+    title: "Leer el archivo descifrado",
+    brief: "El desencriptador de la misión 0 generó agentes_descifrado.txt. Ahora abrilo de forma segura, leé su contenido completo e imprimilo en pantalla. Si el archivo no existe (la misión 0 no fue ejecutada), el programa debe avisarlo con un mensaje claro.",
+    concepts: ["open / with", "read vs readlines", "try/except", "FileNotFoundError"],
+    inputNote: "Archivo de entrada: agentes_descifrado.txt (generado por la misión 0)",
+    prompt: `Soy dev senior (JS/Java) pero nunca usé Python. Tengo un archivo llamado "agentes_descifrado.txt" generado por mi script anterior. Necesito un programa que:
+1) Abra y lea el archivo completo usando "with open"
+2) Imprima todo el contenido en pantalla
+3) Use try/except para manejar el caso en que el archivo no exista, mostrando un mensaje claro que indique que hay que ejecutar primero el desencriptador
+Explicame la diferencia entre read() y readlines(), y por qué "with open" es mejor que open/close manual. Tratame como alguien que ya sabe programar pero no conoce la sintaxis Python.`,
+    expectedOutput: `## ARCHIVO INTERCEPTADO - SECTOR 7 - CLASIFICADO ##
+## ORIGEN: RED PHANTOM - TRANSMISION 2024-11-03 ##
+## ESTADO: PARCIALMENTE CORRUPTO ##
+
+-- REGISTRO DE CAMPO --
+NOMBRE|ALIAS|PAIS|NIVEL|ACTIVO
+Viktor Sorokin | SOMBRA | RU | N-9 | SI
+...
+[todo el contenido descifrado aparece en pantalla]`,
+    outputClass: "out-ok",
+    learning: [
+      { label: "Abrir archivo", val: "with open('f','r') as f:" },
+      { label: "Leer todo", val: "f.read()" },
+      { label: "Leer líneas", val: "f.readlines() → lista" },
+      { label: "Error de archivo", val: "except FileNotFoundError:" }
+    ],
+    insight: "<strong>with open garantiza el cierre</strong> del archivo incluso si el programa falla — equivale a try-with-resources de Java. El modo <code>'r'</code> es lectura; <code>'w'</code> escritura (sobreescribe); <code>'a'</code> append. <code>read()</code> retorna un string, <code>readlines()</code> una lista de strings con los saltos de línea incluidos. El <code>except FileNotFoundError</code> es más específico que un <code>except Exception</code> genérico — en Python siempre conviene ser preciso con el tipo de error."
+  },
+  {
+    id: 2,
+    phase: "parse",
+    title: "Limpiar el ruido del archivo",
+    brief: "El archivo tiene líneas vacías, encabezados con ## y separadores con --. Necesitamos quedarnos solo con las líneas que tienen contenido real, sin espacios extras ni saltos de línea sobrantes.",
+    concepts: ["strip()", "startswith()", "list comprehension", "filtrado por contenido"],
+    inputNote: "Input: lista cruda de readlines() — líneas con espacios y \\n al final",
+    prompt: `Tengo el contenido del archivo descifrado leído con readlines() en Python. Cada línea puede tener espacios al inicio/fin y termina con "\\n". Necesito:
+1) Eliminar espacios y saltos de línea de cada línea con strip()
+2) Descartar las líneas que quedan vacías después del strip
+3) Descartar las que empiezan con "#" o con "--"
+4) Mostrar cuántas líneas quedaron y listarlas
+Hacelo con list comprehension en una sola expresión si es posible. Explicame cómo funciona list comprehension comparado con un for loop tradicional y con .filter() de JavaScript.`,
+    expectedOutput: `Líneas útiles encontradas: 13
+
+NOMBRE|ALIAS|PAIS|NIVEL|ACTIVO
+Viktor Sorokin | SOMBRA | RU | N-9 | SI
+Elena Vasquez  |  VIPER |MX | N-7 | SI
+[CORRUPTO]
+Hans Mueller|LOBO|DE|N-8|SI
+Yuki Tanaka | KITSUNE | JP | N-6 | NO
+...`,
+    outputClass: "out-ok",
+    learning: [
+      { label: "Limpiar bordes", val: "linea.strip()" },
+      { label: "Starts with", val: "s.startswith('#')" },
+      { label: "List comp filtro", val: "[x for x in l if cond]" },
+      { label: "Bool en if", val: "if linea: → no vacía" }
+    ],
+    insight: "<strong>List comprehension con filtro:</strong> <code>[l.strip() for l in lineas if l.strip() and not l.startswith('#')]</code> hace en una línea lo que en JS tomaría un <code>.map().filter()</code> encadenado. El <code>if linea</code> al final funciona porque en Python un string vacío es falsy — igual que en JS. <code>startswith()</code> acepta una tupla: <code>startswith(('#', '--'))</code> chequea ambos prefijos de una vez."
+  },
+  {
+    id: 3,
+    phase: "parse",
+    title: "Separar datos de ruido",
+    brief: "De las líneas limpias, identificar únicamente las que contienen datos de agentes — las que tienen el separador | . El encabezado NOMBRE|ALIAS... también tiene | pero lo excluimos por nombre.",
+    concepts: ["in operator", "str.split()", "acceso por índice", "slicing de listas"],
+    inputNote: "Input: lista de líneas limpias de la misión anterior",
+    prompt: `Tengo una lista de strings en Python. Necesito quedarme solo con las que contienen el carácter "|" y que NO empiecen con "NOMBRE" (que es el encabezado). Para cada línea válida, hacé un split por "|" y mostrá el resultado como lista. Mostrá también cuántas líneas de datos encontraste.
+Explicame cómo funciona el operador "in" para strings en Python, y cómo funciona list slicing — qué hacen lista[1:], lista[:3] y lista[-1].`,
+    expectedOutput: `Líneas con datos encontradas: 12
+
+['Viktor Sorokin ', ' SOMBRA ', ' RU ', ' N-9 ', ' SI']
+['Elena Vasquez  ', '  VIPER ', 'MX ', ' N-7 ', ' SI']
+['[CORRUPTO]']  ← solo 1 campo, no válida
+['Hans Mueller', 'LOBO', 'DE', 'N-8', 'SI']
+...
+
+Nota: algunos campos tienen espacios sobrantes → se limpian en misión 4`,
+    outputClass: "out-warn",
+    learning: [
+      { label: "Contiene", val: "'|' in linea" },
+      { label: "Separar", val: "linea.split('|')" },
+      { label: "Slicing", val: "lista[1:] / lista[-1]" },
+      { label: "Validar largo", val: "len(partes) == 5" }
+    ],
+    insight: "<strong>El operador in</strong> funciona para strings y listas: <code>'|' in linea</code> busca el carácter en el string. <code>split('|')</code> retorna una lista de strings — si la línea tiene 5 campos separados por |, obtenés una lista de 5 elementos. Notá que los espacios todavía están (<code>' SOMBRA '</code>) — eso se resuelve en la siguiente misión con strip() en cada parte."
+  },
+  {
+    id: 4,
+    phase: "parse",
+    title: "Eliminar registros corruptos",
+    brief: "El archivo tiene líneas [CORRUPTO], registros con ??? como nombre, y líneas con menos de 5 campos. Necesitamos filtrarlas y quedarnos solo con los registros completos y válidos, reportando qué se descartó y por qué.",
+    concepts: ["condiciones múltiples", "and / or / not", "any()", "len() como validación"],
+    inputNote: "Input: lista de líneas con | de la misión anterior",
+    prompt: `Tengo una lista de strings, cada uno separado por "|". Necesito filtrar y quedarme solo con las líneas que cumplan TODAS estas condiciones:
+1) Que al hacer split('|') den exactamente 5 partes
+2) Que ninguna parte (después de strip) sea "???"
+3) Que ninguna parte empiece con "["
+Mostrá primero cuántas líneas se descartaron y por qué motivo (con un mensaje descriptivo por cada una), luego la lista final de registros válidos con su cantidad. Usá condiciones con and/or/not. Explicame la diferencia entre and/or/not de Python vs && || ! de JS/Java, y qué hace any().`,
+    expectedOutput: `Registros descartados (6):
+  ✗ "[CORRUPTO]"         → menos de 5 campos
+  ✗ "???|SPECTRE|..."    → contiene ???
+  ✗ "---LINEA DAÑADA---" → menos de 5 campos
+  ✗ "[CORRUPTO]"         → menos de 5 campos
+  ✗ "[CORRUPTO]"         → menos de 5 campos
+  ✗ "???|PHANTOM|..."    → contiene ???
+
+Registros válidos: 10
+  Viktor Sorokin | SOMBRA | RU | N-9 | SI
+  ...`,
+    outputClass: "out-ok",
+    learning: [
+      { label: "Y lógico", val: "cond1 and cond2" },
+      { label: "Negación", val: "not condicion" },
+      { label: "Any en lista", val: "any(x == '???' for x in p)" },
+      { label: "All", val: "all(len(p)>0 for p in partes)" }
+    ],
+    insight: "<strong>Python usa palabras, no símbolos:</strong> <code>and</code>, <code>or</code>, <code>not</code> en vez de <code>&&</code>, <code>||</code>, <code>!</code>. También existen <code>any()</code> y <code>all()</code>: <code>any('???' in p for p in partes)</code> retorna True si al menos una parte contiene '???'. Son equivalentes a <code>.some()</code> y <code>.every()</code> de JS — pero integrados al lenguaje."
+  },
+  {
+    id: 5,
+    phase: "parse",
+    title: "Parsear agentes a diccionarios",
+    brief: "Ya tenemos 10 líneas limpias y válidas. Convertimos cada una en un diccionario Python con claves nombre, alias, pais, nivel_raw y activo — limpiando los espacios sobrantes de cada valor.",
+    concepts: ["dict", "zip()", "dict comprehension", "map() + strip"],
+    inputNote: "Input: 10 líneas válidas con formato 'Nombre | ALIAS | XX | N-9 | SI'",
+    prompt: `Tengo una lista de strings con formato "Nombre | ALIAS | PAIS | N-9 | SI". Para cada uno necesito:
+1) Hacer split por "|" y obtener las 5 partes
+2) Hacer strip() a cada parte para eliminar espacios
+3) Crear un diccionario con claves: nombre, alias, pais, nivel_raw, activo
+4) Retornar una lista de estos diccionarios
+Mostrá dos formas: una con zip() y otra con dict comprehension. Luego imprimí los 10 agentes formateados. Explicame qué hace zip(), para qué sirve y cuándo usarlo.`,
+    expectedOutput: `{'nombre': 'Viktor Sorokin', 'alias': 'SOMBRA', 'pais': 'RU', 'nivel_raw': 'N-9', 'activo': 'SI'}
+{'nombre': 'Elena Vasquez', 'alias': 'VIPER', 'pais': 'MX', 'nivel_raw': 'N-7', 'activo': 'SI'}
+{'nombre': 'Hans Mueller', 'alias': 'LOBO', 'pais': 'DE', 'nivel_raw': 'N-8', 'activo': 'SI'}
+... (10 agentes en total, sin espacios sobrantes)`,
+    outputClass: "out-ok",
+    learning: [
+      { label: "Dict literal", val: "{'clave': valor}" },
+      { label: "Zip", val: "zip(keys, values)" },
+      { label: "Map strip", val: "list(map(str.strip, p))" },
+      { label: "Dict de zip", val: "dict(zip(k, v))" }
+    ],
+    insight: "<strong>zip() combina dos iterables</strong> en pares: <code>dict(zip(['nombre','alias'], ['Viktor','SOMBRA']))</code> crea <code>{'nombre':'Viktor', 'alias':'SOMBRA'}</code>. Es el equivalente pythónico de construir un objeto a partir de arrays paralelos. <code>map(str.strip, partes)</code> aplica strip() a cada elemento — como <code>.map(s => s.trim())</code> en JS, pero pasando la función directamente sin necesidad de lambda."
+  },
+  {
+    id: 6,
+    phase: "parse",
+    title: "Descifrar el nivel de amenaza",
+    brief: "El campo nivel_raw tiene formato 'N-9'. Hay que extraer el número, convertirlo a entero y clasificar cada agente en CRITICO / ALTO / MEDIO / BAJO. Además hay que convertir el campo activo de string 'SI'/'NO' a booleano real.",
+    concepts: ["str.replace()", "int()", "funciones con return", "conversión de tipos", "expresión ternaria"],
+    inputNote: "Input: lista de 10 dicts con nivel_raw = 'N-9' y activo = 'SI'/'NO'",
+    prompt: `Tengo una lista de diccionarios de agentes. Cada uno tiene "nivel_raw" con formato "N-7" y "activo" con valor "SI" o "NO". Necesito una función Python que procese cada agente y le agregue:
+- "nivel": el número entero extraído de nivel_raw (sacar "N-" y convertir a int)
+- "clasificacion": "CRITICO" si nivel >= 9, "ALTO" si >= 7, "MEDIO" si >= 5, "BAJO" si menor
+- "activo": convertido a booleano real (True/False en vez de "SI"/"NO")
+Mostrá también cuántos agentes hay por clasificación usando un dict de conteos. Explicame int(), str(), bool() y cómo funciona la expresión ternaria en Python comparada con JS.`,
+    expectedOutput: `Viktor Sorokin  | SOMBRA   | nivel: 9 | CRITICO | activo: True
+Elena Vasquez   | VIPER    | nivel: 7 | ALTO    | activo: True
+Hans Mueller    | LOBO     | nivel: 8 | ALTO    | activo: True
+Yuki Tanaka     | KITSUNE  | nivel: 6 | MEDIO   | activo: False
+...
+
+Resumen por clasificación:
+  CRITICO: 2 agentes  (Sofia Reyes, Viktor Sorokin)
+  ALTO   : 4 agentes
+  MEDIO  : 4 agentes`,
+    outputClass: "out-ok",
+    learning: [
+      { label: "Reemplazar", val: "s.replace('N-', '')" },
+      { label: "A entero", val: "int('9') → 9" },
+      { label: "A bool", val: "activo == 'SI'" },
+      { label: "Ternario", val: "x if cond else y" }
+    ],
+    insight: "<strong>Conversión de tipos es siempre explícita:</strong> <code>int('9')</code>, <code>float('3.14')</code>, <code>str(42)</code> — Python nunca coerciona silenciosamente como JS. Para convertir 'SI'/'NO' a bool, la forma pythónica es simplemente <code>activo == 'SI'</code> — retorna True o False directamente. El ternario en Python: <code>'CRITICO' if nivel >= 9 else 'ALTO'</code> — al revés que en JS: <code>nivel >= 9 ? 'CRITICO' : 'ALTO'</code>."
+  },
+  {
+    id: 7,
+    phase: "parse",
+    title: "Agrupar agentes por país de origen",
+    brief: "Necesitamos saber cuántos agentes hay por país y listar sus aliases. Hay que agrupar una lista de diccionarios por un campo clave — un patrón fundamental en análisis de datos con Python.",
+    concepts: ["defaultdict", "collections module", "sorted() con key", "lambda"],
+    inputNote: "Input: lista de 10 dicts con pais, alias y clasificacion procesados",
+    prompt: `Tengo una lista de diccionarios de agentes con campos "pais", "alias" y "clasificacion". Necesito agruparlos por país. Mostrá 3 formas:
+1) Con un for loop y dict normal (manejando la key inexistente manualmente)
+2) Con collections.defaultdict (explicame qué es y por qué existe)
+3) Con dict comprehension y groupby-style
+Para cada país mostrá: código, cantidad de agentes, sus aliases y si hay algún CRITICO. Ordená de mayor a menor cantidad usando sorted() con key=lambda. Explicame cómo funciona sorted() con el parámetro key.`,
+    expectedOutput: `Distribución por país de origen (ordenado por cantidad):
+
+RU  — 2 agentes  ⚠ CRITICO DETECTADO
+      SOMBRA (CRITICO), HIERRO (MEDIO)
+AR  — 1 agente   ⚠ CRITICO DETECTADO
+      ECLIPSE (CRITICO)
+DE  — 1 agente
+      LOBO (ALTO)
+IT  — 1 agente
+      TORMENTA (ALTO)
+... (9 países en total)`,
+    outputClass: "out-warn",
+    learning: [
+      { label: "Import", val: "from collections import defaultdict" },
+      { label: "Defaultdict", val: "defaultdict(list)" },
+      { label: "Sorted con key", val: "sorted(d, key=lambda x:...)" },
+      { label: "Items", val: "dict.items() → pares" }
+    ],
+    insight: "<strong>defaultdict</strong> evita el clásico KeyError al acumular en un dict: en vez de <code>if pais not in grupos: grupos[pais] = []</code>, simplemente hacés <code>grupos[pais].append(alias)</code> y listo. <code>sorted()</code> con <code>key=lambda</code> es el equivalente de <code>.sort((a,b) => ...)</code> de JS, pero más declarativo: <code>sorted(paises.items(), key=lambda x: len(x[1]), reverse=True)</code> ordena por cantidad de agentes de mayor a menor."
+  },
+  {
+    id: 8,
+    phase: "parse",
+    title: "Generar el reporte de inteligencia final",
+    brief: "Misión final: encapsular todo el pipeline en una clase CasoInvestigacion que ejecute cada etapa — desde leer el archivo descifrado hasta generar reporte_final.txt con los agentes activos de nivel crítico o alto.",
+    concepts: ["clases", "__init__", "self", "métodos de instancia", "escribir archivos"],
+    inputNote: "Input: agentes_descifrado.txt → pipeline completo de las 9 misiones",
+    prompt: `Quiero refactorizar todo el pipeline de análisis en una clase Python "CasoInvestigacion". La clase debe:
+- Recibir en __init__ la ruta del archivo descifrado
+- Tener un método "procesar()" que ejecute todo el pipeline: leer → limpiar → filtrar corruptos → parsear a dicts → clasificar niveles
+- Tener un método "agentes_activos_prioritarios()" que retorne solo activo=True y clasificacion CRITICO o ALTO
+- Tener un método "generar_reporte(ruta_salida)" que escriba un .txt con fecha, cantidad procesados, descartados, y la tabla de agentes críticos formateada con columnas alineadas
+
+Explicame la diferencia entre self en Python y this en JS/Java, y qué son @classmethod y @staticmethod.`,
+    expectedOutput: `=== REPORTE DE INTELIGENCIA — RED PHANTOM ===
+Generado        : 2024-11-03
+Archivo fuente  : agentes_descifrado.txt
+Encriptado orig : agentes_enemigos.txt (ROT-13)
+
+Registros totales   : 19
+Corruptos descartados: 6
+Agentes identificados: 10  (4 activos prioritarios)
+
+AMENAZAS ACTIVAS — NIVEL CRITICO/ALTO:
+───────────────────────────────────────────
+NOMBRE             ALIAS     PAÍS  NVL  CLASIF
+Viktor Sorokin     SOMBRA    RU    9    CRITICO
+Sofia Reyes        ECLIPSE   AR    9    CRITICO
+Hans Mueller       LOBO      DE    8    ALTO
+Bruno Ferretti     TORMENTA  IT    8    ALTO
+
+[Reporte guardado: reporte_final.txt]`,
+    outputClass: "out-ok",
+    learning: [
+      { label: "Clase", val: "class CasoInvestigacion:" },
+      { label: "Constructor", val: "def __init__(self, ruta):" },
+      { label: "Self", val: "≈ this de JS/Java" },
+      { label: "Escribir", val: "open(f,'w').write()" }
+    ],
+    insight: "<strong>self es explícito siempre</strong> — cada método de instancia lo recibe como primer parámetro, pero no lo pasás al llamarlo: <code>caso.procesar()</code> funciona aunque el método sea <code>def procesar(self):</code>. Python lo inyecta automáticamente. <code>@classmethod</code> recibe <code>cls</code> y se usa para constructores alternativos. <code>@staticmethod</code> no recibe ni self ni cls — es una función que vive en la clase por organización, no por comportamiento."
+  }
+];
+
+let done = new Set();
+let current = 0;
+let showOverview = false;
+let fileTab = 'enc';
+
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') }
+
+function showTab(tab) {
+  fileTab = tab;
+  document.getElementById('tab-enc').className = 'ftab' + (tab==='enc'?' active':'');
+  document.getElementById('tab-dec').className = 'ftab' + (tab==='dec'?' active':'');
+  renderFilePreview();
+}
+
+function renderFilePreview() {
+  const content = fileTab === 'enc' ? FILE_ENC : FILE_DEC;
+  const el = document.getElementById('file-preview');
+  const status = document.getElementById('fstatus');
+  if (fileTab === 'enc') {
+    status.className = 'file-status status-enc';
+    status.textContent = '🔒 ENCRIPTADO — ROT-13';
+    el.innerHTML = content.split('\n').map(l => `<span class="fc-enc">${esc(l)}</span>\n`).join('');
+  } else {
+    status.className = 'file-status status-dec';
+    status.textContent = '🔓 DESENCRIPTADO — misión 0';
+    el.innerHTML = content.split('\n').map(l => {
+      if (l.startsWith('##') || l.startsWith('--')) return `<span class="fc-header">${esc(l)}</span>\n`;
+      if (l.startsWith('[') || l.startsWith('---') || l.startsWith('???')) return `<span class="fc-corrupt">${esc(l)}</span>\n`;
+      if (l.includes('|') && !l.startsWith('NOMBRE')) return `<span class="fc-valid">${esc(l)}</span>\n`;
+      return esc(l) + '\n';
+    }).join('');
+  }
+}
+
+function render() {
+  const nav = document.getElementById('mnav');
+  nav.innerHTML = '';
+
+  missions.forEach((m,i) => {
+    const d = document.createElement('button');
+    d.className = 'dot' + (i===current&&!showOverview?' active':'') + (done.has(i)&&i!==current?' done':'');
+    d.textContent = i;
+    d.title = m.title;
+    d.onclick = () => { current=i; showOverview=false; render(); };
+    nav.appendChild(d);
+  });
+
+  const ov = document.createElement('button');
+  ov.className = 'dot'+(showOverview?' active':'');
+  ov.innerHTML = '<i class="ti ti-list" aria-hidden="true" style="font-size:14px"></i>';
+  ov.title = 'Vista general';
+  ov.onclick = () => { showOverview=true; render(); };
+  nav.appendChild(ov);
+
+  const pct = (done.size / missions.length) * 100;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-lbl').textContent = `${done.size} de ${missions.length} misiones completadas`;
+
+  if (showOverview) { renderOverview(); return; }
+  renderMission(missions[current]);
+}
+
+function renderMission(m) {
+  const isDecrypt = m.phase === 'decrypt';
+  const badgeClass = isDecrypt ? 'badge-decrypt' : 'badge-parse';
+  const badgeLabel = isDecrypt ? '🔐 Misión 0 — Descifrado' : `Misión ${m.id}/8 — Análisis`;
+
+  const cryptoHTML = m.cryptoExplainer ? `
+    <div class="sec">
+      <p class="sec-t"><i class="ti ti-lock" aria-hidden="true"></i> El cifrado ROT-13</p>
+      <div class="crypto-box">
+        <p class="crypto-title"><i class="ti ti-rotate" aria-hidden="true"></i> Cada letra se desplaza 13 posiciones</p>
+        <div class="crypto-row"><span class="crypto-from">A B C D E F G</span><span class="crypto-arrow">→</span><span class="crypto-to">N O P Q R S T</span></div>
+        <div class="crypto-row"><span class="crypto-from">N O P Q R S T</span><span class="crypto-arrow">→</span><span class="crypto-to">A B C D E F G</span></div>
+        <p class="crypto-note">Propiedad elegante: rot13(rot13(texto)) == texto siempre.<br>Números, espacios y símbolos como | # - ? no cambian.</p>
+      </div>
+    </div>` : '';
+
+  const learnHTML = m.learning.map(l => `
+    <div class="lpill">
+      <div class="plbl2">${l.label}</div>
+      <div class="pval">${esc(l.val)}</div>
+    </div>`).join('');
+
+  document.getElementById('mview').innerHTML = `
+    <div class="mcard">
+      <div class="mcard-head">
+        <span class="mbadge ${badgeClass}">${badgeLabel}</span>
+        <div>
+          <p class="mtitle">${m.title}</p>
+          <div>${m.concepts.map(c=>`<span class="ctag">${c}</span>`).join('')}</div>
+        </div>
+      </div>
+      <div class="mbody">
+        <div class="sec">
+          <p class="sec-t"><i class="ti ti-file-alert" aria-hidden="true"></i> Briefing del caso</p>
+          <div class="brief">${m.brief}</div>
+        </div>
+        ${cryptoHTML}
+        <div class="sec">
+          <p class="sec-t"><i class="ti ti-arrow-right" aria-hidden="true"></i> Input de esta misión</p>
+          <div class="input-highlight"><i class="ti ti-file-text" aria-hidden="true"></i><span>${m.inputNote}</span></div>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><i class="ti ti-message" aria-hidden="true"></i> Prompt para la IA</p>
+          <div style="position:relative">
+            <div class="pbox" id="pb-${m.id}">${esc(m.prompt)}</div>
+            <button class="cpbtn" id="cb-${m.id}" onclick="copyP(${m.id})"><i class="ti ti-copy" aria-hidden="true"></i> Copiar</button>
+          </div>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><i class="ti ti-terminal" aria-hidden="true"></i> Output esperado</p>
+          <div class="output-box"><span class="${m.outputClass}">${esc(m.expectedOutput)}</span></div>
+        </div>
+        <div class="sec">
+          <p class="sec-t"><i class="ti ti-bulb" aria-hidden="true"></i> Conceptos clave</p>
+          <div class="lgrid">${learnHTML}</div>
+        </div>
+        <div class="sec" style="margin-bottom:0">
+          <p class="sec-t"><i class="ti ti-brain" aria-hidden="true"></i> Insight para el debriefing</p>
+          <div class="insight">${m.insight}</div>
+        </div>
+      </div>
+      <div class="mfoot">
+        ${m.id > 0 ? `<button class="btn" onclick="prev()"><i class="ti ti-arrow-left" aria-hidden="true"></i> Anterior</button>` : ''}
+        <button class="btn btn-d" onclick="markDone(${m.id})">
+          <i class="ti ti-check" aria-hidden="true"></i> ${done.has(m.id) ? 'Completada ✓' : 'Marcar completada'}
+        </button>
+        ${m.id < missions.length-1 ? `<button class="btn btn-p" onclick="next()">Siguiente <i class="ti ti-arrow-right" aria-hidden="true"></i></button>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderOverview() {
+  const cards = missions.map(m => `
+    <div class="ocard ${done.has(m.id)?'dov':''} ${m.phase==='decrypt'?'phase0':''}" onclick="goTo(${m.id})">
+      <p class="onum">${m.phase==='decrypt'?'🔐 Misión 0':'Misión '+m.id} ${done.has(m.id)?'✓':''}</p>
+      <p class="otit">${m.title}</p>
+      <p class="ocon">${m.concepts.join(' · ')}</p>
+    </div>`).join('');
+
+  document.getElementById('mview').innerHTML = `
+    <div class="ogrid">${cards}</div>
+    <div class="insight" style="margin-top:.5rem">
+      <strong>Pipeline completo:</strong>
+      ROT-13 descifrado (ord/chr/%) → leer archivo → limpiar líneas → detectar separadores → filtrar corruptos → parsear a dicts → descifrar niveles → agrupar por país → generar reporte con clase
+    </div>`;
+}
+
+function copyP(mid) {
+  const m = missions.find(x=>x.id===mid);
+  navigator.clipboard.writeText(m.prompt).then(()=>{
+    const b = document.getElementById(`cb-${mid}`);
+    b.className='cpbtn ok'; b.innerHTML='<i class="ti ti-check" aria-hidden="true"></i> Copiado';
+    setTimeout(()=>{ b.className='cpbtn'; b.innerHTML='<i class="ti ti-copy" aria-hidden="true"></i> Copiar'; },2000);
+  });
+}
+
+function markDone(id){ done.add(id); if(current<missions.length-1){current++;} render(); }
+function prev(){ if(current>0){current--;showOverview=false;render();} }
+function next(){ if(current<missions.length-1){current++;showOverview=false;render();} }
+function goTo(i){ current=i;showOverview=false;render(); }
+
+renderFilePreview();
+render();
+</script>
+</body>
+</html>
